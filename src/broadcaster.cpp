@@ -38,7 +38,7 @@ void setup() {
 void update() {
     uint32_t now = millis();
 
-    if (now < lastUpdate || now > lastUpdate + DURATION_PER_UPDATE) {
+    if (now < lastUpdate || now >= lastUpdate + DURATION_PER_UPDATE) {
         lastUpdate = now;
         udp.broadcastTo(broadcastPacket, broadcastPacketLen, UDP_PORT);
     }
