@@ -1,12 +1,11 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncUDP.h>
+
+#include "broadcaster.h"
 
 const int NUM_LEDS = 150;
 const int DATA_PIN = 4;
-const uint16_t UDP_PORT = 12888;
-const char *UDP_PREFIX = "ESPLEDS";
 
 const char *SSID = "Pommert";
 const char *PASSWORD = "HuwaWaHaya";
@@ -17,12 +16,8 @@ const uint8_t DEFAULT_SATURATION = 240;
 CRGB leds[NUM_LEDS];
 uint8_t hue = 0;
 uint8_t brightness = DEFAULT_BRIGHTNESS;
-uint8_t *broadcastPacket;
-size_t broadcastPacketLen;
-int pingIndex = 0;
 
 AsyncWebServer server(80);
-AsyncUDP udp;
 
 void custom_fill_rainbow(struct CRGB *pFirstLED, int numToFill,
                          uint8_t initialHue, uint8_t deltaHue,
@@ -65,18 +60,7 @@ void setup() {
     FastLED.show();
     delay(1000);
 
-    // Create broadcast string: <prefix> <binary-length> <ip> | <name>
-    String message = WiFi.localIP().toString() + "|";
-    auto messageLen = (uint8_t) message.length();
-    size_t prefixLen = strlen(UDP_PREFIX);
-    broadcastPacket = new uint8_t[prefixLen + 1 + messageLen + 1];
-    memcpy(broadcastPacket, UDP_PREFIX, prefixLen);
-    broadcastPacket[prefixLen] = messageLen;
-    memcpy(broadcastPacket + prefixLen + 1, message.c_str(), messageLen);
-    broadcastPacketLen = prefixLen + 1 + messageLen;
-
-    // Connect to a UDP port for broadcasting
-    udp.connect(IPAddress{ 192, 168, 1, 255 }, UDP_PORT);
+    broadcaster::setup();
 
     // Setup brightness GET endpoint
     server.on("/brightness", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -117,11 +101,7 @@ void loop() {
 
     hue++;
 
-    pingIndex++;
-    if (pingIndex >= 5) {
-        pingIndex = 0;
-        udp.broadcastTo(broadcastPacket, broadcastPacketLen, UDP_PORT);
-    }
+    broadcaster::update();
 
     delay(10);
 }
