@@ -35,6 +35,14 @@ void custom_fill_rainbow(struct CRGB *pFirstLED, int numToFill,
     }
 }
 
+char *nullTerminate(uint8_t *data, size_t len) {
+    char *dataStr = new char[len + 1];
+    memcpy(dataStr, data, len);
+    dataStr[len] = 0;
+
+    return dataStr;
+}
+
 void setupLeds() {
     CFastLED::addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
@@ -44,7 +52,6 @@ void setupLeds() {
 }
 
 void setupServer(AsyncWebServer *server) {
-
     // Setup brightness GET endpoint
     server->on("/brightness", HTTP_GET, [](AsyncWebServerRequest *request) {
         String brightnessStr = String(brightness);
@@ -58,12 +65,10 @@ void setupServer(AsyncWebServer *server) {
     brightnessPut->onBody([](AsyncWebServerRequest *request, uint8_t *data,
                              size_t len, size_t index, size_t total) {
         // Construct a null-terminated string out of the data
-        char *dataStr = new char[len + 1];
-        memcpy(dataStr, data, len);
-        dataStr[len] = 0;
+        char *dataStr = nullTerminate(data, len);
 
         // Convert data string to a number and assign it to brightness
-        brightness = atoi(dataStr);
+        brightness = strtol(dataStr, nullptr, 10);
 
         delete[] dataStr;
     });
@@ -72,6 +77,31 @@ void setupServer(AsyncWebServer *server) {
         request->send_P(200, "text/plain", brightnessStr.c_str());
     });
     server->addHandler(brightnessPut);
+
+    // Setup frame-duration GET endpoint
+    server->on("/frame-duration", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String frameDurationStr = String(frameDuration);
+        request->send_P(200, "text/plain", frameDurationStr.c_str());
+    });
+
+    // Setup frame-duration PUT endpoint
+    AsyncCallbackWebHandler *frameDurationPut = new AsyncCallbackWebHandler();
+    frameDurationPut->setUri("/frame-duration");
+    frameDurationPut->setMethod(HTTP_PUT);
+    frameDurationPut->onBody([](AsyncWebServerRequest *request, uint8_t *data,
+                                size_t len, size_t index, size_t total) {
+        // Construct a null-terminated string out of the data
+        char *dataStr = nullTerminate(data, len);
+
+        frameDuration = strtol(dataStr, nullptr, 10);
+
+        delete[] dataStr;
+    });
+    frameDurationPut->onRequest([](AsyncWebServerRequest *request) {
+        String frameDurationStr = String(frameDuration);
+        request->send_P(200, "text/plain", frameDurationStr.c_str());
+    });
+    server->addHandler(frameDurationPut);
 }
 
 void update() {
