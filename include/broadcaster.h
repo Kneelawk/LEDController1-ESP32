@@ -9,6 +9,8 @@ namespace broadcaster {
 
 void setup();
 
+void rebuildPacket();
+
 void update();
 
 }

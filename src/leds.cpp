@@ -2,10 +2,11 @@
 // Created by jedidiah on 9/14/21.
 //
 
-#include <Arduino.h>
-#include <FastLED.h>
-
 #include "leds.h"
+
+#include <Arduino.h>
+
+#include "util.h"
 
 namespace leds {
 
@@ -42,14 +43,6 @@ void custom_fill_rainbow(struct CRGB *pFirstLED, int numToFill,
     }
 }
 
-char *nullTerminate(uint8_t *data, size_t len) {
-    char *dataStr = new char[len + 1];
-    memcpy(dataStr, data, len);
-    dataStr[len] = 0;
-
-    return dataStr;
-}
-
 void setupLeds() {
     CFastLED::addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
@@ -74,7 +67,7 @@ void setupServer(AsyncWebServer *server) {
     brightnessPut->onBody([](AsyncWebServerRequest *request, uint8_t *data,
                              size_t len, size_t index, size_t total) {
         // Construct a null-terminated string out of the data
-        char *dataStr = nullTerminate(data, len);
+        char *dataStr = util::nullTerminate(data, len);
 
         // Convert data string to a number and assign it to brightness
         brightness = (uint8_t) strtol(dataStr, nullptr, 10);
@@ -99,7 +92,7 @@ void setupServer(AsyncWebServer *server) {
     frameDurationPut->onBody([](AsyncWebServerRequest *request, uint8_t *data,
                                 size_t len, size_t index, size_t total) {
         // Construct a null-terminated string out of the data
-        char *dataStr = nullTerminate(data, len);
+        char *dataStr = util::nullTerminate(data, len);
 
         frameDuration = (uint32_t) strtol(dataStr, nullptr, 10);
 
@@ -122,7 +115,7 @@ void setupServer(AsyncWebServer *server) {
     huePerPixelPut->setMethod(HTTP_PUT);
     huePerPixelPut->onBody([](AsyncWebServerRequest *request, uint8_t *data,
                               size_t len, size_t index, size_t total) {
-        char *dataStr = nullTerminate(data, len);
+        char *dataStr = util::nullTerminate(data, len);
         huePerPixel = (uint8_t) strtol(dataStr, nullptr, 10);
         delete[] dataStr;
     });
@@ -143,7 +136,7 @@ void setupServer(AsyncWebServer *server) {
     huePerFramePut->setMethod(HTTP_PUT);
     huePerFramePut->onBody([](AsyncWebServerRequest *request, uint8_t *data,
                               size_t len, size_t index, size_t total) {
-        char *dataStr = nullTerminate(data, len);
+        char *dataStr = util::nullTerminate(data, len);
         huePerFrame = (uint8_t) strtol(dataStr, nullptr, 10);
         delete[] dataStr;
     });

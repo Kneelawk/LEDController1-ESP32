@@ -4,6 +4,7 @@
 
 #include "broadcaster.h"
 #include "leds.h"
+#include "storage.h"
 
 const char *SSID = "Pommert";
 const char *PASSWORD = "HuwaWaHaya";
@@ -12,6 +13,7 @@ AsyncWebServer server(80);
 
 void setup() {
     leds::setupLeds();
+    storage::setup();
 
     // Connect to the WiFi
     WiFi.begin(SSID, PASSWORD);
@@ -37,6 +39,7 @@ void setup() {
     broadcaster::setup();
 
     leds::setupServer(&server);
+    storage::setupServer(&server);
 
     // Start the server listening
     server.begin();

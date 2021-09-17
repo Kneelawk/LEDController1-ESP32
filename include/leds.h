@@ -6,6 +6,7 @@
 #define NODEMCUWS2815_LEDS_H
 
 #include <ESPAsyncWebServer.h>
+#include <FastLED.h>
 
 namespace leds {
 
