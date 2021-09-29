@@ -43,6 +43,12 @@ void custom_fill_rainbow(struct CRGB *pFirstLED, int numToFill,
     }
 }
 
+void fill_every_n(struct CRGB *pFirstLED, int len, int stride, CRGB color) {
+    for (int i = 0; i < len; i += stride) {
+        pFirstLED[i] = color;
+    }
+}
+
 void setupLeds() {
     CFastLED::addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
 
@@ -151,6 +157,11 @@ void update() {
 
         custom_fill_rainbow(leds, NUM_LEDS, hue, huePerPixel, brightness,
                             DEFAULT_SATURATION);
+
+        if (WiFiClass::status() != WL_CONNECTED) {
+            fill_every_n(leds, NUM_LEDS, 5, CRGB{ 0, 0, brightness });
+        }
+
         FastLED.show();
 
         hue += huePerFrame;

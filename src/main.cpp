@@ -9,7 +9,11 @@
 const char *SSID = "Pommert";
 const char *PASSWORD = "HuwaWaHaya";
 
+const unsigned long CONNECT_INTERVAL = 10000;
+
 AsyncWebServer server(80);
+
+unsigned long lastConnect = 0;
 
 void setup() {
     leds::setupLeds();
@@ -31,6 +35,8 @@ void setup() {
         delay(500);
     }
 
+    lastConnect = millis();
+
     // Show a status that we've connected
     fill_solid(leds::leds, leds::NUM_LEDS, CRGB{ 0, 255, 0 });
     FastLED.show();
@@ -48,4 +54,11 @@ void setup() {
 void loop() {
     leds::update();
     broadcaster::update();
+
+    // Make sure WiFi is connected
+    unsigned long now = millis();
+    if (WiFiClass::status() != WL_CONNECTED && now - lastConnect > CONNECT_INTERVAL) {
+        lastConnect = now;
+        WiFi.begin(SSID, PASSWORD);
+    }
 }
