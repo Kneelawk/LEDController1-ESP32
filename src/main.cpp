@@ -1,13 +1,16 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <ESPAsyncWebServer.h>
+#include <WiFi.h>
+
+#include "config.h"
 
 #include "broadcaster.h"
 #include "leds.h"
 #include "storage.h"
 
-const char *SSID = "Pommert";
-const char *PASSWORD = "HuwaWaHaya";
+const char *SSID = WIFI_SSID;
+const char *PASSWORD = WIFI_PASSWORD;
 
 const unsigned long CONNECT_INTERVAL = 10000;
 
