@@ -20,6 +20,8 @@ uint8_t *broadcastPacket = nullptr;
 size_t broadcastPacketLen;
 uint32_t lastUpdate = 0;
 
+wl_status_t lastWifiStatus = WL_CONNECTED;
+
 AsyncUDP udp;
 
 void rebuildPacket() {
@@ -46,6 +48,14 @@ void setup() {
 }
 
 void update() {
+    // Sometimes the router will assign us a different IP when we reconnect, so
+    // we need to update our packet when we reconnect
+    const wl_status_t currentWifiStatus = WiFiClass::status();
+    if (lastWifiStatus != WL_CONNECTED && currentWifiStatus == WL_CONNECTED) {
+        rebuildPacket();
+    }
+    lastWifiStatus = currentWifiStatus;
+
     uint32_t now = millis();
 
     if (now < lastUpdate || now >= lastUpdate + DURATION_PER_UPDATE) {
